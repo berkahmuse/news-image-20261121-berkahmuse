@@ -2,11 +2,39 @@
 """Render the 21 November 2026 world-news image (1024x1024 PNG).
 
 Concept: "ONE DAY ON EARTH" — a newspaper front page with one dominant
-lead story (Russia's mass strikes on Ukraine, missiles landing in Poland)
-and four illustrated story cards, plus an "also today" ticker.
-All six stories were verified as events of Saturday 21 November 2026
-from multiple independent news sources (BBC, Reuters, Al Jazeera,
-Financial Times, Guardian, OneTurn, Horizon).
+lead story (Bitcoin's crash below $60,000) and four illustrated story
+cards, plus an "also today" ticker.
+
+FIX NOTE (21 Nov 2026): the first build of this entry FAILED independent
+verification because 5 of its 8 stories were events of 20 November, not
+the 21st (Russia-strikes lead, S&P 500 rout, UK-EU deals, pancreatic-
+cancer pill ticker, Gen Z protests ticker). Those 5 were replaced with
+the stories below; the COP31, Houthi and Peru stories were kept (the
+verifier confirmed them as 21 November). Every story in this version,
+with the date evidence checked before rendering:
+
+- LEAD (Markets): Bitcoin crashes below $60,000 — CoinGecko 06:06 UTC
+  Sat 21 Nov: $55,684, -9.96% in 24h, lowest since Sept 2024; 24h
+  liquidations $1.76B (BeInCrypto) to nearly $2.4B (CryptoPotato /
+  The Defiant). Sources: bitcoinfoundation.org, trustscrypto.com.
+- SPORT: F1 Las Vegas GP — race night Sat 21 Nov (20:00 PST, 50 laps,
+  Las Vegas Strip Circuit); Verstappen on pole after fastest qualifier
+  Antonelli took a 5-place grid penalty. Sources: Reuters 21 Nov,
+  formula1.com. (Preview only — the race had not run at build time.)
+- UNITED NATIONS: CCW "killer robot" talks in Geneva end Sat 21 Nov
+  (~03:00 GMT) in a weak, non-binding deal: a two-year mandate to
+  elaborate rules by 2028; ~100 states backed binding rules, the US,
+  Russia and Israel opposed. Source: Reuters 21 Nov.
+- CLIMATE: COP31 (Antalya) talks run past their Friday deadline —
+  closing plenary suspended 22:29 Fri, third draft and plenary continue
+  Sat 21 Nov. Sources: AP / TBS News, The Climate Watch.
+- MIDDLE EAST: Saudi-led coalition intercepts 3 Houthi ballistic
+  missiles aimed at Riyadh in the early hours of Sat 21 Nov, the third
+  night running. Source: Reuters 21 Nov.
+- TICKER: M6.7 quake in central Peru — 19:09 Peru time Fri 20 Nov =
+  00:09 GMT Sat 21 Nov (AP; China Daily). Fire at the Hartha power
+  station, Basra, Sat 21 Nov kills at least 4, injures 30 (Reuters,
+  dateline Basra, Nov 21).
 
 Run:  python3 render.py            -> writes entry.png next to this file
 The entrypoint main.py only copies entry.png to /output/entry.png, so the
@@ -72,88 +100,78 @@ def card(draw, x, y, w, h, accent):
     draw.rectangle([x, y + 4, x + w, y + 8], fill=accent)
 
 
-def draw_skyline(d, x0, y0, w, h):
-    """Night skyline over Kyiv: dark sky, lit windows, a domed church,
-    red missile arcs and smoke. All flat vector shapes, contained in the
-    (x0, y0, w, h) box."""
-    d.rectangle([x0, y0, x0 + w, y0 + h], fill=(16, 28, 52))
-    # stars
-    for sx, sy in [(28, 22), (90, 48), (150, 18), (210, 40), (260, 26),
-                   (320, 52), (370, 20), (60, 78), (300, 84), (180, 66)]:
-        d.ellipse([x0 + sx - 2, y0 + sy - 2, x0 + sx + 2, y0 + sy + 2],
-                  fill=(230, 230, 210))
-    # moon (small, top right)
-    d.ellipse([x0 + w - 58, y0 + 16, x0 + w - 22, y0 + 52],
-              fill=(240, 230, 190))
-    base = y0 + h
-    # missile arcs, kept inside the box
-    d.arc([x0 + 150, y0 + 10, x0 + 420, y0 + 190], start=195, end=335,
-          fill=(230, 70, 50), width=5)
-    d.arc([x0 + 60, y0 + 40, x0 + 320, y0 + 210], start=205, end=330,
-          fill=(230, 70, 50), width=4)
-    for mx, my in [(x0 + 330, y0 + 118), (x0 + 258, y0 + 140)]:
-        d.ellipse([mx - 7, my - 7, mx + 7, my + 7], fill=(255, 90, 60))
-        d.ellipse([mx - 3, my - 3, mx + 3, my + 3], fill=(255, 220, 120))
-    # smoke plumes just above the rooftops
-    for sx, sy, sr in [(x0 + 78, base - 128, 15), (x0 + 102, base - 146, 11),
-                       (x0 + 262, base - 138, 13)]:
-        d.ellipse([sx - sr, sy - sr // 2, sx + sr, sy + sr // 2],
-                  fill=(96, 104, 116))
-    # buildings (silhouettes with lit windows)
-    buildings = [(0, 62, 96), (58, 92, 128), (146, 78, 104), (316, 114, 118)]
-    for bx, bw, bh in buildings:
-        d.rectangle([x0 + bx, base - bh, x0 + bx + bw, base],
-                    fill=(30, 48, 84))
-        for wy in range(base - bh + 12, base - 10, 22):
-            for wx in range(x0 + bx + 10, x0 + bx + bw - 10, 20):
-                if (wx * 7 + wy * 13) % 5 < 2:
-                    d.rectangle([wx, wy, wx + 6, wy + 8], fill=(255, 214, 120))
-    # domed church block between the buildings
-    cx0, cw2, ch2 = x0 + 224, 92, 108
-    d.rectangle([cx0, base - ch2, cx0 + cw2, base], fill=(30, 48, 84))
-    for dx, dr in [(cx0 + 26, 17), (cx0 + 66, 13)]:
-        top = base - ch2
-        d.rectangle([dx - 3, top - 16, dx + 3, top], fill=(30, 48, 84))
-        d.ellipse([dx - dr, top - 16 - dr, dx + dr, top - 16 + dr // 2],
-                  fill=(201, 162, 39))
-        d.polygon([(dx, top - 16 - dr - 12), (dx - 5, top - 16 - dr),
-                   (dx + 5, top - 16 - dr)], fill=(201, 162, 39))
-
-
-def draw_chart(d, x0, y0, w, h):
-    """Falling market chart."""
-    d.rectangle([x0, y0, x0 + w, y0 + h], fill=(255, 255, 255))
-    d.line([x0 + 8, y0 + h - 8, x0 + w - 8, y0 + h - 8], fill=GREY, width=2)
-    pts = [(x0 + 10, y0 + 22), (x0 + 42, y0 + 34), (x0 + 74, y0 + 30),
-           (x0 + 106, y0 + 62), (x0 + 138, y0 + 96)]
-    d.line(pts, fill=RED, width=5, joint="curve")
+def draw_bitcoin(d, x0, y0, w, h):
+    """Lead art: dark navy panel, a big gold coin with a bold B and two
+    vertical strokes (no bitcoin glyph in DejaVu), a red falling line
+    and a -10% label. Contained in the (x0, y0, w, h) box."""
+    d.rectangle([x0, y0, x0 + w, y0 + h], fill=(13, 20, 38))
+    # faint chart gridlines
+    for gy in (52, 104, 156, 208):
+        d.line([x0 + 196, y0 + gy, x0 + w - 14, y0 + gy],
+               fill=(38, 52, 82), width=2)
+    # gold coin
+    cx, cy, r = x0 + 100, y0 + h // 2, 76
+    d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=(247, 181, 36),
+              outline=(184, 128, 20), width=5)
+    d.ellipse([cx - r + 10, cy - r + 10, cx + r - 10, cy + r - 10],
+              outline=(184, 128, 20), width=3)
+    # the two vertical strokes of the bitcoin B, peeking above/below
+    for bx in (cx - 13, cx + 13):
+        d.line([bx, cy - 56, bx, cy + 56], fill=(13, 20, 38), width=8)
+    d.text((cx, cy), "B", font=font(FONT_B, 96), fill=(13, 20, 38),
+           anchor="mm")
+    # red falling line + arrowhead
+    pts = [(x0 + 210, y0 + 48), (x0 + 268, y0 + 84), (x0 + 318, y0 + 76),
+           (x0 + 368, y0 + 132), (x0 + 408, y0 + 168)]
+    d.line(pts, fill=RED, width=6, joint="curve")
     ex, ey = pts[-1]
-    d.polygon([(ex, ey), (ex - 16, ey - 2), (ex - 4, ey + 12)], fill=RED)
-    d.ellipse([pts[0][0] - 4, pts[0][1] - 4, pts[0][0] + 4, pts[0][1] + 4],
+    d.polygon([(ex + 6, ey + 8), (ex - 14, ey + 4), (ex + 2, ey - 12)],
               fill=RED)
-    d.text((x0 + 12, y0 + h - 34), "-3.7%", font=font(FONT_B, 26), fill=RED)
+    d.text((x0 + 282, y0 + 196), "-10%", font=font(FONT_B, 40), fill=RED)
 
 
-def draw_flags(d, x0, y0, w, h):
-    """Simplified Union Jack + EU flag, side by side."""
-    # Union Jack
-    d.rectangle([x0, y0, x0 + 68, y0 + 46], fill=(1, 33, 105))
-    d.line([x0, y0, x0 + 68, y0 + 46], fill=(255, 255, 255), width=9)
-    d.line([x0 + 68, y0, x0, y0 + 46], fill=(255, 255, 255), width=9)
-    d.line([x0 + 34, y0, x0 + 34, y0 + 46], fill=(255, 255, 255), width=15)
-    d.line([x0, y0 + 23, x0 + 68, y0 + 23], fill=(255, 255, 255), width=15)
-    d.line([x0 + 34, y0, x0 + 34, y0 + 46], fill=(200, 16, 46), width=7)
-    d.line([x0, y0 + 23, x0 + 68, y0 + 23], fill=(200, 16, 46), width=7)
-    # EU flag
-    ex = x0 + 78
-    d.rectangle([ex, y0, ex + 68, y0 + 46], fill=(0, 51, 153))
-    import math
-    for i in range(12):
-        a = 2 * math.pi * i / 12 - math.pi / 2
-        sx = ex + 34 + int(15 * math.cos(a))
-        sy = y0 + 23 + int(15 * math.sin(a))
-        d.ellipse([sx - 3, sy - 3, sx + 3, sy + 3], fill=(255, 209, 0))
-    d.text((x0 + 6, y0 + h - 32), "UK + EU", font=font(FONT_B, 24), fill=NAVY)
+def draw_f1(d, x0, y0, w, h):
+    """Chequered flag (8x4) on a pole, speed lines, '50 LAPS' in gold."""
+    # pole
+    d.line([x0 + 8, y0 + 4, x0 + 8, y0 + 84], fill=INK, width=4)
+    # chequered flag
+    fx, fy, cell = x0 + 12, y0 + 6, 16
+    for row in range(4):
+        for col in range(8):
+            if (row + col) % 2 == 0:
+                d.rectangle([fx + col * cell, fy + row * cell,
+                             fx + (col + 1) * cell, fy + (row + 1) * cell],
+                            fill=INK)
+    d.rectangle([fx, fy, fx + 8 * cell, fy + 4 * cell], outline=INK, width=2)
+    # speed lines
+    for i, (off, ln) in enumerate([(94, 118), (106, 88), (118, 104)]):
+        d.line([x0 + 14, y0 + off, x0 + 14 + ln, y0 + off],
+               fill=(156, 163, 175), width=5)
+    d.text((x0 + 12, y0 + h - 28), "50 LAPS", font=font(FONT_B, 24),
+           fill=GOLD)
+
+
+def draw_un(d, x0, y0, w, h):
+    """Simple robot in blue outline: round head, antenna, two eyes, body."""
+    # antenna
+    d.line([x0 + 75, y0 + 34, x0 + 75, y0 + 16], fill=BLUE, width=4)
+    d.ellipse([x0 + 69, y0 + 4, x0 + 81, y0 + 16], outline=BLUE, width=4)
+    # ears
+    d.rectangle([x0 + 28, y0 + 58, x0 + 38, y0 + 82], outline=BLUE, width=4)
+    d.rectangle([x0 + 112, y0 + 58, x0 + 122, y0 + 82], outline=BLUE, width=4)
+    # head
+    d.rounded_rectangle([x0 + 36, y0 + 32, x0 + 114, y0 + 98], radius=18,
+                        outline=BLUE, width=4)
+    # eyes
+    for ex in (x0 + 60, x0 + 90):
+        d.ellipse([ex - 6, y0 + 58, ex + 6, y0 + 70], fill=BLUE)
+    # mouth
+    d.line([x0 + 62, y0 + 84, x0 + 88, y0 + 84], fill=BLUE, width=4)
+    # neck + body
+    d.line([x0 + 75, y0 + 98, x0 + 75, y0 + 106], fill=BLUE, width=4)
+    d.rounded_rectangle([x0 + 46, y0 + 106, x0 + 104, y0 + 144], radius=10,
+                        outline=BLUE, width=4)
+    d.ellipse([x0 + 69, y0 + 118, x0 + 81, y0 + 130], fill=BLUE)
 
 
 def draw_climate(d, x0, y0, w, h):
@@ -221,31 +239,31 @@ def main():
     # ---------- lead story ----------
     lx, ly, lw, lh = 24, 136, 976, 316
     card(d, lx, ly, lw, lh, RED)
-    draw_skyline(d, lx + 14, ly + 22, 430, 272)
+    draw_bitcoin(d, lx + 14, ly + 22, 430, 272)
     tx = lx + 470
-    d.text((tx, ly + 22), "LEAD STORY  —  WAR IN EUROPE",
+    d.text((tx, ly + 22), "LEAD STORY  —  MARKETS",
            font=font(FONT_B, 22), fill=RED)
-    head = wrap(d, "RUSSIA'S BIGGEST STRIKES HIT UKRAINE",
+    head = wrap(d, "BITCOIN CRASHES BELOW $60,000",
                 font(FONT_B, 36), lw - 496)
     y = text_block(d, tx, ly + 54, head, font(FONT_B, 36), INK, 42)
     y = text_block(d, tx, y + 6,
-                   wrap(d, "Missiles land in Poland; at least 8 dead in Kyiv.",
+                   wrap(d, "Down 10% in a day, lowest since Sept 2024.",
                         font(FONT_B, 22), lw - 496),
                    font(FONT_B, 22), (60, 60, 60), 27)
     text_block(d, tx, y + 8,
-               wrap(d, "400+ drones, 110 missiles overnight. Warsaw calls it "
-                       "a deliberate provocation.",
+               wrap(d, "Nearly $2.4B in leveraged bets wiped out as the "
+                       "crypto sell-off deepens.",
                     font(FONT_R, 19), lw - 496),
                font(FONT_R, 19), (70, 70, 70), 24)
 
     # ---------- four story cards ----------
     cards = [
-        ("MARKETS", RED, draw_chart,
-         "AI ROUT DRAGS MARKETS DOWN",
-         "S&P 500 -3.7% into correction; Nasdaq erases 2026 gains."),
-        ("EUROPE", BLUE, draw_flags,
-         "UK AND EU SIGN POST-BREXIT DEALS",
-         "Food trade, carbon markets, youth mobility for 100,000."),
+        ("SPORT", RED, draw_f1,
+         "F1 UNDER THE LIGHTS IN VEGAS",
+         "Verstappen on pole for tonight's 50-lap race on the Strip."),
+        ("UNITED NATIONS", BLUE, draw_un,
+         "UN DELAYS 'KILLER ROBOT' RULES TO 2028",
+         "Geneva talks end in weak deal; no binding ban on autonomous weapons."),
         ("CLIMATE", TEAL, draw_climate,
          "COP31 TALKS RUN PAST DEADLINE",
          "Nearly 200 nations deadlocked over fossil fuels in Antalya."),
@@ -271,8 +289,8 @@ def main():
     # ---------- footer ticker ----------
     d.rectangle([0, 924, W, H], fill=NAVY)
     d.text((24, 936), "ALSO TODAY:", font=font(FONT_B, 21), fill=GOLD)
-    ticker = ("6.7 quake shakes central Peru   •   Pancreatic-cancer pill hope in trial   •   "
-              "Gen Z protests sweep 25 countries")
+    ticker = ("6.7 quake shakes central Peru   •   "
+              "Fire at Basra power station kills at least 4")
     text_block(d, 24, 962, wrap(d, ticker, font(FONT_R, 20), W - 48),
                font(FONT_R, 20), (235, 235, 235), 24)
 
